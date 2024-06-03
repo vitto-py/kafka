@@ -1,0 +1,3 @@
+rootProject.name = 'kafkaProducer'
+include 'kafka_basics'
+

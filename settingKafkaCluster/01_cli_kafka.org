@@ -1,0 +1,99 @@
+#+title: 01 Cli Kafka
+* Run a simple Kafka using CLI
+we want to pass only this file /home/msi/Documents/data/sample1.csv and
+/home/msi/Documents/data/sample2.csv
+
+For that you need 3 steps
+1. Data can only be readed from a Topic so: Create a Topic
+2. Sent data file using kafka-console-producer
+3. Read data file using kafka-console-consumer
+
+
+** Step 1 Create Topic
+For creating a topic you need this command
+#+begin_quote
+BEFORE: you need to RUN the Zookeper and the Server lines (they are in the configuration file)
+#+end_quote
+
+Then you can run this
+#+begin_src
+ kafka-topics(.sh) --create --topic TopicNameTest --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092
+
+#+end_src
+
+lets explain 1 by 1
++ *kafka-topics --create --topic*: this first part is for creating the topic. The (.sh) depends on your configuration, for my linux is necessary even when I have set my ENV_VAR
++ But you have to give it a Name so TopicNameTest
++ *--partitions 1*: sets the number of partitions to 1
++ *--replication-factor 1*: sets the number of replica to 1
++ then we need to specify/point to the server in this case we only have the *localhost with the port 9092* but, in a real production you will have a real IP with a port
+
+*** This will output this
+
+IN:
+(base) msi@msi-MAG:~$ kafka-topics.sh --create --topic TopicNameTest --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092
+OUT:
+Created topic TopicNameTest.
+
+** Step 2 Send Data
+Now is time to use the CLI for the Producers (is just call like that but in reality is just another .sh file)
+
+#+begin_src
+kafka-console-producer.sh --topic TopicNameTest --broker-list localhost:9092 < /home/msi/Documents/data/sample1.csv
+#+end_src
+Part By Part
++ kafka-console-producer.sh --topic *TopicNameTest* Look how the Topic Name is the same than in the line before (so you are referencing this topic)
++ --broker-list *localhost:9092* Here you are selecting the server, and is the same that you used on the topic creation
+  - *--broker-list = --bootstrap-server* this are the same, both mean the address/name/point of the server, but depending where are you sitting is the way you are gonna look at the server
++ < /home/msi/Documents/data/sample1.csv: this mean LOAD this file
+
+Once you run this command there is no output, just goes, easy peasy
+
+** Step 3 Read Data
+To read the data you have to use the consumer CLI (again just a name for a .sh file)
+
+#+begin_src
+kafka-console-consumer.sh --topic TopicNameTest --bootstrap-server localhost:9092 --from-beginning
+#+end_src
+Again Step By Step
++ *kafka-console-consumer.sh --topic TopicNameTest*: You are selecting the same Topic where you wrote the data
++ *--bootstrap-server localhost:9092*: select the same server, look from the client-side is BOOTSTRAP, from the Producer is a BROKER
++ *--from-beginning*: read the file from the beginning
+
+The output will be like this
+
+IN:
+base) msi@msi-MAG:~$ kafka-console-consumer.sh --topic TopicNameTest --bootstrap-server localhost:9092 --from-beginning
+
+OUT:
+20MICRONS,EQ,44.4,44.4,42.9,43.05,43.1,43.4,25589,1108912.35,05-NOV-2018,275,INE144J01027,
+21STCENMGM,EQ,23.95,23.95,23.05,23.25,23.05,23.5,4903,114697.2,05-NOV-2018,31,INE253B01015,
+3IINFOTECH,EQ,3.3,3.5,3.3,3.4,3.4,3.3,1563338,5293597.1,05-NOV-2018,647,INE748C01020,
+3MINDIA,EQ,20280,20440,19811,20077.85,19999.95,20282.85,1735,35031334.75,05-NOV-2018,639,INE470A01017,
+5PAISA,EQ,189.9,189.9,182.4,185.3,185.3,186.15,1373,255637.1,05-NOV-2018,106,INE618L01018,
+63MOONS,EQ,75.6,81.4,75,79.9,79.4,75.75,360724,28515840.4,05-NOV-2018,4131,INE111B01023,
+8K
+
+** All in Full in 3 Terminals
+
+*** T1
+#+begin_src sh :results output
+kafka-server-start.sh /home/msi/kafka_2.13-3.7.0/config/server.properties
+#+end_src
+
+#+RESULTS:
+
+*** T2
+#+begin_src sh :results output
+zookeeper-server-start.sh /home/msi/kafka_2.13-3.7.0/config/zookeeper.properties
+#+end_src
+*** T3
+#+begin_src sh :session name1 :results output
+kafka-topics.sh --create --topic TopicNameTest --partitions 1 --replication-factor 1 --bootstrap-server localhost:9092
+
+kafka-console-producer.sh --topic TopicNameTest --broker-list localhost:9092 < /home/msi/Documents/data/sample1.csv
+
+kafka-console-consumer.sh --topic TopicNameTest --bootstrap-server localhost:9092 --from-beginning
+#+end_src
+
+Now if you add another file (from another terminal) it will be automatically displayed in the CONSUMER (think about that)

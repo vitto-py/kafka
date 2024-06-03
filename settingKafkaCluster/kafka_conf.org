@@ -1,0 +1,91 @@
+#+title: Kafka Conf
+* How to install Kafka
+not that much to do
+Resources: https://kafka.apache.org/quickstart
+just install scala first
+1. Go to: https://kafka.apache.org/downloads
+2. Download the latest version option > Binary Files
+3. in my case was tar -xvzf kafka_2.13-3.7.0.tgz
+4. unpack it > tar -xvzf kafka_2.13-3.7.0.tgz
+5. Move it to the home folder >mv kafka_2.13-3.7.0 ../
+6. Done
+
+If you need to install Scala or Java (for this case see the pyspark tutorial.org file) first just follow this website
+Steps: https://www.scala-lang.org/download/
+
+* How to conf Kafka in Ubuntu
+Once you have installed the whole thing (that is only install Java + download the files for Kafka in apache)
+you need to set up (that also is nothing because you already have the binaries)
+
+1. Add Kafka to the env variable
+   This will give you the path you need to put into .bashrc
+   #+begin_src sh :results output
+    cd ~
+    cd kafka_2.13-3.7.0/
+    pwd
+   #+end_src
+
+   #+RESULTS:
+   : /home/msi/kafka_2.13-3.7.0
+
+   write into .bashrc
+   #+begin_src sh
+   export PATH=$PATH:/home/msi/kafka_2.13-3.7.0/bin
+   #+end_src
+
+   this will allow you to execute Kafka command w/o the need to specify the whole path
+   so instead of `src_sh{./kafka_2.13-3.7.0/bin/kafka-topics.sh}` you can use `src_sh{kafka-topics.sh}`
+
+2. *Execute Kafka*
+   For this you need 2 terminals, and the commands have the following structure
+   *command_to_execute.sh <file_config.properties>*
+
+   * Terminal 1: Start the server
+   #+begin_src sh :results output
+   kafka-server-start.sh /home/msi/kafka_2.13-3.7.0/config/server.properties
+   #+end_src
+
+   * Terminal 2: Start Zookeper (in the future will no longer be supported, see KRaft)
+   #+begin_src sh :results output
+   zookeeper-server-start.sh /home/msi/kafka_2.13-3.7.0/config/zookeeper.properties
+   #+end_src
+
+   Look at the FULL_PATH
+
+3. KRaft
+   From version 4.X Kafka will no longer support ZK,
+   To lunch Kafka w/o ZK do this
+
+  #+begin_src sh :results output
+  kafka-storage.sh random-uuid
+  -- this will give you a unique ID like
+  F_ncE5OoSxeuISPNmkuV6g
+  -- then execute this command, replace <uuid> for your numbers
+  kafka-storage.sh format -t <uuid> -c ~/kafka_2.13-3.7.0/config/kraft/server.properties
+  #+end_src
+
+  #+RESULTS:
+
+  after run this commnads you should see
+
+  #+begin_src sh :results output
+  metaPropertiesEnsemble=MetaPropertiesEnsemble(metadataLogDir=Optional.empty, dirs={/tmp/kraft-combined-logs: EMPTY})
+  Formatting /tmp/kraft-combined-logs with metadata.version 3.7-IV4.
+  #+end_src
+
+  this will format the directory that is in the log.dirs in the config/kraft/server.properties
+
+  Now you can lunch the broker (server in kafka-lingo)
+
+  #+begin_src
+  kafka-server-start.sh ~/kafka_2.13-3.7.0/config/kraft/server.properties
+  #+end_src
+
+ *Congratulations, the broker is now running on its own in KRaft mode!*
+
+  Resources
+  https://www.conduktor.io/kafka/how-to-install-apache-kafka-on-windows-without-zookeeper-kraft-mode/
+
+
+* Starting Kafka using CLI
+lets see if every
